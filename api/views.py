@@ -135,7 +135,7 @@ def faceid(request: HttpRequest):
                 if now.hour >= 9:
                     control.status = "late"
                 else:
-                    if now.hour == 8 and now.minute > 45:
+                    if now.hour == 8 and now.minute > 15:
                         control.status = "late"
                     else:
                         control.status = "arrived"
