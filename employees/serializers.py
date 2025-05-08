@@ -110,6 +110,7 @@ class AttendancesModelSerializer(serializers.ModelSerializer):
         "attendance_output_time_func"
     )
     vocation = serializers.SerializerMethodField("vocation_func")
+    image = serializers.SerializerMethodField("image_func")
 
     def attendance_access_func(self, obj: Employee):
         request = self.context.get("request")
@@ -216,6 +217,27 @@ class AttendancesModelSerializer(serializers.ModelSerializer):
             return data
         return None
 
+    def image_func(self, obj: Employee):
+        request = self.context.get("request")
+        day = request.GET.get("day")
+        month = request.GET.get("month")
+        year = request.GET.get("year")
+        today = datetime.strptime(f"{day}-{month}-{year}", "%d-%m-%Y")
+        access_control = AccessControl.objects.filter(
+            employee_id=obj.pk,
+            created__day=day,
+            created__month=month,
+            created__year=year,
+        )
+        # print("Xodim", obj.full_name, obj.pk, access_control)
+        if access_control:
+            access_control = access_control.last()
+            if access_control.image:
+                if access_control.employee.department.pk == 1:
+                    return None
+                return access_control.image.url
+        return None
+
 
     class Meta:
         model = Employee
@@ -229,6 +251,7 @@ class AttendancesModelSerializer(serializers.ModelSerializer):
             "attendance_output",
             "attendance_output_time",
             "vocation",
+            "image",
         )
 
 

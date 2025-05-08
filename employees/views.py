@@ -185,7 +185,7 @@ def add_employee_view(request: HttpRequest):
 @decorators.api_view(http_method_names=["GET"])
 # @decorators.permission_classes(permission_classes=[permissions.IsAuthenticated])
 def departments_view(request: HttpRequest):
-    departments_obj = Department.objects.filter(active=True)
+    departments_obj = Department.objects.filter(active=True).order_by("-id")
     departments = DepartmentModelSerializer(departments_obj, many=True)
     return Response({
         "status": "success",
