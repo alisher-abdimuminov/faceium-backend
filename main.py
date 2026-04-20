@@ -1,40 +1,47 @@
 from deepface import DeepFace
-import cv2
-import time
+import os
 
-cap = cv2.VideoCapture(0)  # Webcam
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
-        
-    # Vaqtincha saqlash uchun fayl
-    temp_img = "temp_frame.jpg"
-    cv2.imwrite(temp_img, frame)
-    
+def analyze_face(image_path):
+    """
+    Rasm faylini tahlil qiladi va natijani qaytaradi.
+    """
+    if not os.path.exists(image_path):
+        print(f"Xato: {image_path} fayli topilmadi!")
+        return
+
+    print(f"Tahlil qilinmoqda: {image_path}...")
+
     try:
-        # Tezkor tahlil
-        analysis = DeepFace.analyze(temp_img, actions=['emotion'], enforce_detection=True)
-        
-        # Anti-spoofing qoidasi
-        if analysis[0]['emotion']['neutral'] > 80:
-            text = "EHTIYOT: Fake yuz (foto/video)"
-            color = (0, 0, 255)  # Qizil
-        else:
-            text = "Haqiqiy yuz"
-            color = (0, 255, 0)  # Yashil
-            
-        # Natijani ekranga chiqarish
-        cv2.putText(frame, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-        
-    except:
-        cv2.putText(frame, "Yuz topilmadi", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    
-    cv2.imshow('Anti-Spoofing System', frame)
-    
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-        
-cap.release()
-cv2.destroyAllWindows()
+        # Serverda tez ishlashi uchun detector_backend='opencv' (yoki 'retinaface' aniqroq lekin sekinroq)
+        results = DeepFace.analyze(
+            img_path=image_path,
+            actions=["emotion", "age", "gender"],
+            enforce_detection=True,
+            detector_backend="opencv",
+        )
+
+        for i, face in enumerate(results):
+            print(f"\n--- {i + 1}-yuz natijalari ---")
+            print(f"Yosh: {face['age']}")
+            print(f"Jins: {face['dominant_gender']}")
+            print(f"Asosiy emotsiya: {face['dominant_emotion']}")
+
+            # Siz yozgan mantiq bo'yicha anti-spoofing tekshiruvi
+            neutral_score = face["emotion"]["neutral"]
+            if neutral_score > 80:
+                print("Status: EHTIYOT: Shubhali (Neutral juda yuqori)")
+            else:
+                print("Status: Haqiqiy ko'rinishda")
+
+    except ValueError as e:
+        print("Xato: Rasmda yuz aniqlanmadi.")
+    except Exception as e:
+        print(f"Kutilmagan xato: {e}")
+
+
+# Test qilish uchun rasm yo'lini yozing
+if __name__ == "__main__":
+    # Serveringizdagi biror rasm fayli yo'li
+    test_image = "image.png"
+    analyze_face(test_image)
