@@ -157,42 +157,16 @@ UNFOLD = {
                         "icon": "location_on",
                         "link": reverse_lazy("admin:employees_area_changelist"),
                     },
-                    # {
-                    #     "title": "Guruhlar",
-                    #     "icon": "group",
-                    #     "link": reverse_lazy("admin:users_group_changelist"),
-                    # },
-                    # {
-                    #     "title": "Dars jadvali",
-                    #     "icon": "group",
-                    #     "link": reverse_lazy("admin:users_schedule_changelist"),
-                    # },
-                    # {
-                    #     "title": "Joylashuvlar",
-                    #     "icon": "location_on",
-                    #     "link": reverse_lazy("admin:users_area_changelist"),
-                    # },
-                    # {
-                    #     "title": "Topshiriqlar",
-                    #     "icon": "add_task",
-                    #     "link": reverse_lazy("admin:users_task_changelist"),
-                    # },
-                    # {
-                    #     "title": "Yuklamalar",
-                    #     "icon": "file_present",
-                    #     "link": reverse_lazy("admin:users_submit_changelist"),
-                    # },
-                    # {
-                    #     "title": "Davomat",
-                    #     "icon": "more_time",
-                    #     "link": reverse_lazy("admin:users_attendancegroup_changelist"),
-                    # },
-                    # {
-                    #     "title": "Guruhlar",
-                    #     "icon": "shield",
-                    #     "link": reverse_lazy("admin:auth_group_changelist"),
-                    #     "permission": lambda request: request.user.is_superuser,
-                    # },
+                    {
+                        "title": "Foydalanuvchilar",
+                        "icon": "account_circle",
+                        "link": reverse_lazy("admin:users_user_changelist"),
+                    },
+                    {
+                        "title": "Tarix",
+                        "icon": "history",
+                        "link": reverse_lazy("admin:users_history_changelist"),
+                    },
                 ],
             }
         ],

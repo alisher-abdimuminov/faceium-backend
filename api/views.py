@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django.core.files.base import ContentFile
 from django.db.models import Q
 
-from employees.models import Area, Employee, AccessControl, OutputControl
+from employees.models import Area, Employee, AccessControl
 
 
 @decorators.api_view(http_method_names=["POST"])

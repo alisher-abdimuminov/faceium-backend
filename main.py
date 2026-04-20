@@ -1,5 +1,4 @@
 import os
-import json
 from deepface import DeepFace
 
 
@@ -14,7 +13,6 @@ def analyze_face(image_path):
     print(f"Tahlil qilinmoqda: {image_path}...")
 
     try:
-        # Serverda tez ishlashi uchun detector_backend='opencv' (yoki 'retinaface' aniqroq lekin sekinroq)
         results = DeepFace.analyze(
             img_path=image_path,
             actions=["emotion", "age", "gender"],
@@ -28,7 +26,6 @@ def analyze_face(image_path):
             print(f"Jins: {face['dominant_gender']}")
             print(f"Asosiy emotsiya: {face['dominant_emotion']}")
 
-            # Siz yozgan mantiq bo'yicha anti-spoofing tekshiruvi
             neutral_score = face["emotion"]["neutral"]
             if neutral_score > 80:
                 print("Status: EHTIYOT: Shubhali (Neutral juda yuqori)")
@@ -36,23 +33,23 @@ def analyze_face(image_path):
                 print("Status: Haqiqiy ko'rinishda")
 
     except ValueError as e:
+        print(e)
         print("Xato: Rasmda yuz aniqlanmadi.")
     except Exception as e:
+        print(e)
         print(f"Kutilmagan xato: {e}")
 
 
 def verify_faces(img1_path, img2_path):
     try:
-        # Ikkita rasmni solishtirish
         result = DeepFace.verify(
             img1_path=img1_path,
             img2_path=img2_path,
-            model_name="VGG-Face",  # Modellardan biri: VGG-Face, Facenet, OpenFace, DeepFace, DeepID, ArcFace
-            detector_backend="opencv",  # Yuzni aniqlash algoritmi
-            distance_metric="cosine",  # Masofani o'lchash turi
+            model_name="VGG-Face",
+            detector_backend="opencv",
+            distance_metric="cosine",
         )
 
-        # Natijani chiroyli ko'rinishda chiqarish
         is_same = result["verified"]
         distance = result["distance"]
         threshold = result["threshold"]
@@ -71,7 +68,6 @@ def verify_faces(img1_path, img2_path):
 
 
 if __name__ == "__main__":
-    # Serveringizdagi biror rasm fayli yo'li
     test_image = "image.png"
     test_image2 = "image2.png"
     analyze_face(test_image)
