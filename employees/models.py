@@ -2,10 +2,7 @@ from uuid import uuid4
 from django.db import models
 
 
-GENDER = (
-    ("male", "Erkak"),
-    ("female", "Ayol")
-)
+GENDER = (("male", "Erkak"), ("female", "Ayol"))
 
 ACCESS_STATUS = (
     ("arrived", "Kelgan"),
@@ -26,7 +23,7 @@ class Coordinate(models.Model):
 
     def __str__(self):
         return self.latitude + " " + self.longitude
-    
+
 
 class Area(models.Model):
     name = models.CharField(max_length=100)
@@ -44,14 +41,16 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
-    
+
 
 class Employee(models.Model):
     handle = models.CharField(max_length=100)
-    uuid = models.CharField(max_length=100, default=uuid4)
+    uuid = models.CharField(max_length=100, default=uuid4, editable=False)
 
     full_name = models.CharField(max_length=1000)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+    department = models.ForeignKey(
+        Department, on_delete=models.SET_NULL, null=True, blank=True
+    )
     position = models.CharField(max_length=1000)
     gender = models.CharField(max_length=100, choices=GENDER)
     working_time = models.CharField(max_length=100, default="1", null=True, blank=True)
@@ -65,6 +64,7 @@ class Employee(models.Model):
     phone = models.CharField(max_length=200, default=None, null=True, blank=True)
 
     active = models.BooleanField(default=True)
+    is_accept = models.BooleanField(default=False)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
