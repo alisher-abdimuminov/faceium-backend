@@ -1,5 +1,6 @@
-from deepface import DeepFace
 import os
+import json
+from deepface import DeepFace
 
 
 def analyze_face(image_path):
@@ -40,8 +41,38 @@ def analyze_face(image_path):
         print(f"Kutilmagan xato: {e}")
 
 
-# Test qilish uchun rasm yo'lini yozing
+def verify_faces(img1_path, img2_path):
+    try:
+        # Ikkita rasmni solishtirish
+        result = DeepFace.verify(
+            img1_path=img1_path,
+            img2_path=img2_path,
+            model_name="VGG-Face",  # Modellardan biri: VGG-Face, Facenet, OpenFace, DeepFace, DeepID, ArcFace
+            detector_backend="opencv",  # Yuzni aniqlash algoritmi
+            distance_metric="cosine",  # Masofani o'lchash turi
+        )
+
+        # Natijani chiroyli ko'rinishda chiqarish
+        is_same = result["verified"]
+        distance = result["distance"]
+        threshold = result["threshold"]
+
+        print(
+            f"Solishtirish natijasi: {'Bitta odam' if is_same else 'Har xil odamlar'}"
+        )
+        print(f"O'xshashlik masofasi: {distance:.4f}")
+        print(f"Chegara (Threshold): {threshold}")
+
+        return result
+
+    except Exception as e:
+        print(f"Xato yuz berdi: {e}")
+        return None
+
+
 if __name__ == "__main__":
     # Serveringizdagi biror rasm fayli yo'li
     test_image = "image.png"
+    test_image2 = "image2.png"
     analyze_face(test_image)
+    verify_faces(img1_path=test_image, img2_path=test_image2)
