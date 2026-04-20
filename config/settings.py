@@ -115,11 +115,15 @@ REST_FRAMEWORK = {
 
 UNFOLD = {
     "SITE_TITLE": "Admin Panel",
-    "SITE_HEADER": "Practicum Control",
+    "SITE_HEADER": "Face Control",
     "SITE_SUBHEADER": "Admin Panel",
     "SITE_ICON": {
-        "light": lambda request: "https://uzfi.uz/static/assets/images/uzfi.png",
-        "dark": lambda request: "https://uzfi.uz/static/assets/images/uzfi.png",
+        "light": lambda request: (
+            "https://samdpi.uz/static/assets2/images/logo/samDPI.png"
+        ),
+        "dark": lambda request: (
+            "https://samdpi.uz/static/assets2/images/logo/samDPI.png"
+        ),
     },
     "SHOW_HISTORY": True,
     "SIDEBAR": {
