@@ -1,6 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.contrib.filters.admin import RangeDateFilter
+from unfold.contrib.filters.admin import AutocompleteSelectFilter
 
 
 from .models import (
@@ -23,6 +24,7 @@ class AreaModelAdmin(ModelAdmin):
     list_display = [
         "name",
     ]
+    search_fields = ("name",)
     exclude = ("coordinates",)
     inlines = [CoordinateInline]
 
@@ -43,6 +45,10 @@ class AccessControlModelAdmin(ModelAdmin):
         ("created", RangeDateFilter),
     )
     list_filter_submit = True
+    autocomplete_fields = (
+        "employee",
+        "area",
+    )
 
 
 @admin.register(Department)
@@ -98,3 +104,4 @@ class VocationModelAdmin(ModelAdmin):
         ("start", RangeDateFilter),
         ("end", RangeDateFilter),
     )
+    autocomplete_fields = ("employee",)

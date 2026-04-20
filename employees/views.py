@@ -39,13 +39,17 @@ def employees_view(request: HttpRequest):
         employees = EmployeeModelSerializer(employees_obj, many=True)
     else:
         department = Department.objects.get(pk=department_pk)
-        employees_obj = Employee.objects.filter(active=True, department=department).order_by("full_name")
+        employees_obj = Employee.objects.filter(
+            active=True, department=department
+        ).order_by("full_name")
         employees = EmployeeModelSerializer(employees_obj, many=True)
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": employees.data,
-    })
+    return Response(
+        {
+            "status": "success",
+            "code": "200",
+            "data": employees.data,
+        }
+    )
 
 
 @decorators.api_view(http_method_names=["GET"])
@@ -62,14 +66,16 @@ def employees_birth_date_view(request: HttpRequest):
     employees_obj = Employee.objects.filter(
         birth_date__month__range=(current_date.month, end_date.month),
         birth_date__day__range=(current_date.day, end_date.day),
-        active=True
+        active=True,
     )
     employees = EmployeeModelSerializer(employees_obj, many=True)
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": employees.data,
-    })
+    return Response(
+        {
+            "status": "success",
+            "code": "200",
+            "data": employees.data,
+        }
+    )
 
 
 @decorators.api_view(http_method_names=["GET"])
@@ -77,18 +83,10 @@ def employees_birth_date_view(request: HttpRequest):
 def employee_view(request: HttpRequest, uuid: str):
     employee_obj = Employee.objects.filter(uuid=uuid)
     if not employee_obj:
-        return Response({
-            "status": "error",
-            "code": "404",
-            "data": None
-        })
+        return Response({"status": "error", "code": "404", "data": None})
     employee_obj = employee_obj.first()
     employee = EmployeeModelSerializer(employee_obj, many=False)
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": employee.data
-    })
+    return Response({"status": "success", "code": "200", "data": employee.data})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -99,30 +97,20 @@ def edit_employee_view(request: HttpRequest, uuid: str):
 
     employee_obj = Employee.objects.filter(uuid=uuid)
     if not employee_obj:
-        return Response({
-            "status": "error",
-            "code": "404",
-            "data": None
-        })
+        return Response({"status": "error", "code": "404", "data": None})
     employee_obj = employee_obj.first()
     employee = CreateEmployeeModelSerializer(employee_obj, data=data)
     if employee.is_valid():
         e = employee.save()
         if ";base64," in image:
-            format, imgstr = image.split(';base64,')
-            ext = format.split('/')[-1] 
-            e.image =  ContentFile(base64.b64decode(imgstr), name='image.' + ext)
+            format, imgstr = image.split(";base64,")
+            ext = format.split("/")[-1]
+            e.image = ContentFile(base64.b64decode(imgstr), name="image." + ext)
             e.save()
         History.objects.create(
-            user=request.user,
-            model="Employee",
-            comment=f"{e.full_name} tahrirlandi"
+            user=request.user, model="Employee", comment=f"{e.full_name} tahrirlandi"
         )
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": employee.data
-    })
+    return Response({"status": "success", "code": "200", "data": employee.data})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -130,55 +118,37 @@ def edit_employee_view(request: HttpRequest, uuid: str):
 def delete_employee_view(request: HttpRequest, uuid: str):
     employee_obj = Employee.objects.filter(uuid=uuid)
     if not employee_obj:
-        return Response({
-            "status": "error",
-            "code": "404",
-            "data": None
-        })
+        return Response({"status": "error", "code": "404", "data": None})
     employee_obj = employee_obj.first()
-    employee_obj.active = False
-    employee_obj.save()
     History.objects.create(
         user=request.user,
         model="Employee",
-        comment=f"{employee_obj.full_name} o'chirildi"
+        comment=f"{employee_obj.full_name} o'chirildi",
     )
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": None
-    })
+    employee_obj.delete()
+
+    return Response({"status": "success", "code": "200", "data": None})
 
 
 @decorators.api_view(http_method_names=["POST"])
 @decorators.permission_classes(permission_classes=[permissions.IsAuthenticated])
 def add_employee_view(request: HttpRequest):
     data = request.data.dict()
-    format, imgstr = data.pop("image").split(';base64,')
-    ext = format.split('/')[-1] 
+    format, imgstr = data.pop("image").split(";base64,")
+    ext = format.split("/")[-1]
 
-    image = ContentFile(base64.b64decode(imgstr), name='image.' + ext)
+    image = ContentFile(base64.b64decode(imgstr), name="image." + ext)
     employee = CreateEmployeeModelSerializer(Employee, data=data)
-    if (employee.is_valid()):
+    if employee.is_valid():
         e = employee.create(employee.validated_data)
         e.image = image
         e.save()
         History.objects.create(
-            user=request.user,
-            model="Employee",
-            comment=f"{e.full_name} qo'shildi"
+            user=request.user, model="Employee", comment=f"{e.full_name} qo'shildi"
         )
     else:
-        return Response({
-            "status": "error",
-            "code": "400",
-            "data": None
-        })
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": None
-    })
+        return Response({"status": "error", "code": "400", "data": None})
+    return Response({"status": "success", "code": "200", "data": None})
 
 
 # Department
@@ -187,11 +157,7 @@ def add_employee_view(request: HttpRequest):
 def departments_view(request: HttpRequest):
     departments_obj = Department.objects.filter(active=True).order_by("-id")
     departments = DepartmentModelSerializer(departments_obj, many=True)
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": departments.data
-    })
+    return Response({"status": "success", "code": "200", "data": departments.data})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -201,11 +167,7 @@ def edit_department_view(request: HttpRequest, pk: int):
     departments_obj = Department.objects.get(pk=pk)
     departments_obj.name = name
     departments_obj.save()
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": None
-    })
+    return Response({"status": "success", "code": "200", "data": None})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -213,11 +175,7 @@ def edit_department_view(request: HttpRequest, pk: int):
 def add_department_view(request: HttpRequest):
     name = request.data.get("name")
     departments_obj = Department.objects.create(name=name)
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": None
-    })
+    return Response({"status": "success", "code": "200", "data": None})
 
 
 # Area
@@ -226,11 +184,7 @@ def add_department_view(request: HttpRequest):
 def areas_view(request: HttpRequest):
     areas_obj = Area.objects.filter(active=True)
     areas = AreaModelSerializer(areas_obj, many=True)
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": areas.data
-    })
+    return Response({"status": "success", "code": "200", "data": areas.data})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -245,15 +199,9 @@ def add_area_view(request: HttpRequest):
         area.coordinates.add(coordinate)
         area.save()
         History.objects.create(
-            user=request.user,
-            model="Area",
-            comment=f"{area.name} qo'shildi"
+            user=request.user, model="Area", comment=f"{area.name} qo'shildi"
         )
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": None
-    })
+    return Response({"status": "success", "code": "200", "data": None})
 
 
 @decorators.api_view(http_method_names=["GET"])
@@ -262,11 +210,13 @@ def employee_vocations(request: HttpRequest, uuid: str):
     employee = Employee.objects.filter(uuid=uuid).first()
     vocations = Vocation.objects.filter(employee=employee)
     vocations_serializer = VocatioModelSerializer(vocations, many=True)
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": vocations_serializer.data,
-    })
+    return Response(
+        {
+            "status": "success",
+            "code": "200",
+            "data": vocations_serializer.data,
+        }
+    )
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -285,10 +235,7 @@ def add_vocation(request: HttpRequest, uuid: str):
         start=start,
         end=end,
     )
-    return Response({
-
-    })
-
+    return Response({})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -299,15 +246,15 @@ def delete_area_view(request: HttpRequest):
     area.active = False
     area.save()
     History.objects.create(
-        user=request.user,
-        model="Area",
-        comment=f"{area.name} o'chirildi"
+        user=request.user, model="Area", comment=f"{area.name} o'chirildi"
     )
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": None,
-    })
+    return Response(
+        {
+            "status": "success",
+            "code": "200",
+            "data": None,
+        }
+    )
 
 
 @decorators.api_view(http_method_names=["GET"])
@@ -315,21 +262,18 @@ def delete_area_view(request: HttpRequest):
 def attendance_view(request: HttpRequest):
     department_pk = int(request.GET.get("department", 1))
     if department_pk > 0:
-        employees_obj = Employee.objects.filter(department_id=department_pk, active=True).order_by("full_name")
-        attendance = AttendancesModelSerializer(employees_obj, many=True, context={ "request": request })
-        return Response({
-            "status": "success",
-            "code": "200",
-            "data": attendance.data
-        })
+        employees_obj = Employee.objects.filter(
+            department_id=department_pk, active=True
+        ).order_by("full_name")
+        attendance = AttendancesModelSerializer(
+            employees_obj, many=True, context={"request": request}
+        )
+        return Response({"status": "success", "code": "200", "data": attendance.data})
     employees_obj = Employee.objects.filter(active=True).order_by("full_name")
-    attendance = AttendancesModelSerializer(employees_obj, many=True, context={ "request": request })
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": attendance.data
-    })
-
+    attendance = AttendancesModelSerializer(
+        employees_obj, many=True, context={"request": request}
+    )
+    return Response({"status": "success", "code": "200", "data": attendance.data})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -344,26 +288,32 @@ def reports(request: HttpRequest):
     end_month = request.data.get("end_month")
     end_year = request.data.get("end_year")
 
-    employees_obj = Employee.objects.filter(department_id=department, active=True).order_by("full_name")
+    employees_obj = Employee.objects.filter(
+        department_id=department, active=True
+    ).order_by("full_name")
 
-    start_date = datetime.strptime(f"{start_day}-{start_month}-{start_year}", "%d-%m-%Y")
+    start_date = datetime.strptime(
+        f"{start_day}-{start_month}-{start_year}", "%d-%m-%Y"
+    )
     end_date = datetime.strptime(f"{end_day}-{end_month}-{end_year}", "%d-%m-%Y")
 
-    date_range = [(start_date + timedelta(days=i)).strftime("%d-%m-%Y") 
-                  for i in range((end_date - start_date).days + 1)]
+    date_range = [
+        (start_date + timedelta(days=i)).strftime("%d-%m-%Y")
+        for i in range((end_date - start_date).days + 1)
+    ]
 
     response = {}
 
     for date in date_range:
         day, month, year = date.split("-")
-        report = AttendancesSerializer(employees_obj, many=True, context={ "date": { "day": day, "month": month, "year": year } })
+        report = AttendancesSerializer(
+            employees_obj,
+            many=True,
+            context={"date": {"day": day, "month": month, "year": year}},
+        )
         response[date] = report.data
 
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": response
-    })
+    return Response({"status": "success", "code": "200", "data": response})
 
 
 @decorators.api_view(http_method_names=["GET"])
@@ -378,14 +328,20 @@ def reports_as_xlsx(request: HttpRequest):
     end_month = request.GET.get("end_month")
     end_year = request.GET.get("end_year")
 
-    employees_obj = Employee.objects.filter(department_id=department, active=True).order_by("full_name")
+    employees_obj = Employee.objects.filter(
+        department_id=department, active=True
+    ).order_by("full_name")
     department = Department.objects.get(pk=department)
 
-    start_date = datetime.strptime(f"{start_day}-{start_month}-{start_year}", "%d-%m-%Y")
+    start_date = datetime.strptime(
+        f"{start_day}-{start_month}-{start_year}", "%d-%m-%Y"
+    )
     end_date = datetime.strptime(f"{end_day}-{end_month}-{end_year}", "%d-%m-%Y")
 
-    date_range = [(start_date + timedelta(days=i)).strftime("%d-%m-%Y") 
-                  for i in range((end_date - start_date).days + 1)]
+    date_range = [
+        (start_date + timedelta(days=i)).strftime("%d-%m-%Y")
+        for i in range((end_date - start_date).days + 1)
+    ]
 
     wb = Workbook()
     ws = wb.active
@@ -393,13 +349,22 @@ def reports_as_xlsx(request: HttpRequest):
     ws.title = department.name
 
     data = []
-    data.append(["Familiya Ism Sharifi", ] + date_range)
+    data.append(
+        [
+            "Familiya Ism Sharifi",
+        ]
+        + date_range
+    )
 
     response = {}
 
     for date in date_range:
         day, month, year = date.split("-")
-        report = AttendancesSerializer(employees_obj, many=True, context={ "date": { "day": day, "month": month, "year": year } })
+        report = AttendancesSerializer(
+            employees_obj,
+            many=True,
+            context={"date": {"day": day, "month": month, "year": year}},
+        )
         response[date] = report.data
 
     counter = 0
@@ -407,9 +372,13 @@ def reports_as_xlsx(request: HttpRequest):
         k = []
         for r in response:
             k.append(response[r][counter].get("attendance_access_time"))
-        data.append([f"{e.full_name}", ] + k)
+        data.append(
+            [
+                f"{e.full_name}",
+            ]
+            + k
+        )
         counter += 1
-
 
     ws.append(data[0])
 
@@ -420,8 +389,10 @@ def reports_as_xlsx(request: HttpRequest):
 
     file_stream = BytesIO()
     wb.save(file_stream)
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename="{department.name}.xlsx"'
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="{department.name}.xlsx"'
     response.write(file_stream.getvalue())
     return response
 
@@ -433,17 +404,28 @@ def statistics(request: HttpRequest):
     data = []
     for department in departments:
         employees_obj = Employee.objects.filter(department=department)
-        access_arrived_obj = AccessControl.objects.filter(employee__department=department, created__year=now.year, created__month=now.month, created__day=now.day, status="arrived")
-        access_late_obj = AccessControl.objects.filter(employee__department=department, created__year=now.year, created__month=now.month, created__day=now.day, status="late")
-        data.append({
-            "department": department.name,
-            "all": employees_obj.count(),
-            "arrived": access_arrived_obj.count(),
-            "late": access_late_obj.count(),
-            "didnotcome": employees_obj.count() - (access_arrived_obj.count() + access_late_obj.count()),
-        })
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": data
-    })
+        access_arrived_obj = AccessControl.objects.filter(
+            employee__department=department,
+            created__year=now.year,
+            created__month=now.month,
+            created__day=now.day,
+            status="arrived",
+        )
+        access_late_obj = AccessControl.objects.filter(
+            employee__department=department,
+            created__year=now.year,
+            created__month=now.month,
+            created__day=now.day,
+            status="late",
+        )
+        data.append(
+            {
+                "department": department.name,
+                "all": employees_obj.count(),
+                "arrived": access_arrived_obj.count(),
+                "late": access_late_obj.count(),
+                "didnotcome": employees_obj.count()
+                - (access_arrived_obj.count() + access_late_obj.count()),
+            }
+        )
+    return Response({"status": "success", "code": "200", "data": data})
