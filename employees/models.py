@@ -1,5 +1,6 @@
 from uuid import uuid4
 from django.db import models
+from django.utils import timezone
 
 
 GENDER = (("male", "Erkak"), ("female", "Ayol"))
@@ -83,7 +84,7 @@ class AccessControl(models.Model):
 
     active = models.BooleanField(default=True)
 
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
