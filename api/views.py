@@ -129,7 +129,8 @@ def faceid(request: HttpRequest):
                 return Response(
                     {"status": "error", "code": "402", "data": result.get("verified")}
                 )
-        except:
+        except Exception as e:
+            print("error:", e)
             control.status = "failed"
             control.save()
             return Response({"status": "error", "code": "400", "data": "None"})
