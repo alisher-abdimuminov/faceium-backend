@@ -1,4 +1,3 @@
-
 import base64
 from datetime import datetime
 from shapely.geometry import Polygon, Point
@@ -18,15 +17,16 @@ from employees.models import Area, Employee, AccessControl, OutputControl
 def make_word(request: HttpRequest):
     data = request.data.get("data")
     doc = DocxTemplate("example.docx")
-    context = { 'users' : data }
+    context = {"users": data}
     doc.render(context)
     doc.save("media/generated_doc.docx")
-    return Response({
-        "status": "success",
-        "code": "200",
-        "data": "https://api.fc.uzfi.uz/media/generated_doc.docx"
-    })
-
+    return Response(
+        {
+            "status": "success",
+            "code": "200",
+            "data": "https://api.fc.uzfi.uz/media/generated_doc.docx",
+        }
+    )
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -48,17 +48,9 @@ def check_location(request: HttpRequest):
         print(polygon)
         print(point)
         print(point_in_the_area)
-        if (point_in_the_area):
-            return Response({
-                "status": "success",
-                "code": "200",
-                "data": area.pk
-            })
-    return Response({
-        "status": "error",
-        "code": "404",
-        "data": None
-    })
+        if point_in_the_area:
+            return Response({"status": "success", "code": "200", "data": area.pk})
+    return Response({"status": "error", "code": "404", "data": None})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -67,16 +59,10 @@ def check_handle(request: HttpRequest):
     employee = Employee.objects.filter(handle=handle)
     if employee:
         employee = employee.first()
-        return Response({
-            "status": "success",
-            "code": "200",
-            "data": employee.full_name
-        })
-    return Response({
-        "status": "error",
-        "code": "404",
-        "data": None
-    })
+        return Response(
+            {"status": "success", "code": "200", "data": employee.full_name}
+        )
+    return Response({"status": "error", "code": "404", "data": None})
 
 
 @decorators.api_view(http_method_names=["POST"])
@@ -86,26 +72,24 @@ def faceid(request: HttpRequest):
     handle = request.data.get("handle", "").lower()
     # area = request.data.get("area")
     if not handle:
-        return Response({
-            "status": "success",
-            "code": "404",
-            "data": None
-        })
+        return Response({"status": "success", "code": "404", "data": None})
     employee = Employee.objects.filter(handle=handle)
-    format, imgstr = base64data.split(';base64,')
-    ext = format.split('/')[-1]
+    format, imgstr = base64data.split(";base64,")
+    ext = format.split("/")[-1]
     base64image = ContentFile(base64.b64decode(imgstr), name=f"taken.{ext}")
     if employee:
         employee = employee.first()
-    # if (now.hour) < 12:
-        control = AccessControl.objects.filter(Q(status="arrived") | Q(status="late"), employee=employee.pk, created__day=now.day, created__month=now.month, created__year=now.year)
+        # if (now.hour) < 12:
+        control = AccessControl.objects.filter(
+            Q(status="arrived") | Q(status="late"),
+            employee=employee.pk,
+            created__day=now.day,
+            created__month=now.month,
+            created__year=now.year,
+        )
         print(control)
         if control:
-            return Response({
-                "status": "error",
-                "code": "201",
-                "data": None
-            })
+            return Response({"status": "error", "code": "201", "data": None})
         control = AccessControl.objects.create(
             employee=employee,
             image=base64image,
@@ -119,19 +103,15 @@ def faceid(request: HttpRequest):
                 img2_path=control.image.path,
             )
             anti_spoofing = DeepFace.extract_faces(
-                img_path=control.image.path,
-                anti_spoofing=True
+                img_path=control.image.path, anti_spoofing=True
             )
-            print(result)
+            print("antispoofing:", anti_spoofing)
+            print("result:", result)
             if result.get("verified"):
                 if not anti_spoofing[0].get("is_real"):
                     control.status = "failed"
                     control.save()
-                    return Response({
-                        "status": "error",
-                        "code": "300",
-                        "data": None
-                    })
+                    return Response({"status": "error", "code": "300", "data": None})
                 if now.hour >= 9:
                     control.status = "late"
                 else:
@@ -140,28 +120,20 @@ def faceid(request: HttpRequest):
                     else:
                         control.status = "arrived"
                 control.save()
-                return Response({
-                    "status": "success",
-                    "code": "200",
-                    "data": result.get("verified")
-                })
+                return Response(
+                    {"status": "success", "code": "200", "data": result.get("verified")}
+                )
             else:
                 control.status = "failed"
                 control.save()
-                return Response({
-                    "status": "error",
-                    "code": "402",
-                    "data": result.get("verified")
-                })
+                return Response(
+                    {"status": "error", "code": "402", "data": result.get("verified")}
+                )
         except:
             control.status = "failed"
             control.save()
-            return Response({
-                "status": "error",
-                "code": "400",
-                "data": "None"
-            })
-    
+            return Response({"status": "error", "code": "400", "data": "None"})
+
         # else:
         #     control = OutputControl.objects.filter(employee=employee.pk, created__day=now.day, created__month=now.month, created__year=now.year, status="gone")
         #     if control:
@@ -213,9 +185,5 @@ def faceid(request: HttpRequest):
         #             "code": "400",
         #             "data": "none"
         #         })
-    
-    return Response({
-        "status": "error",
-        "code": "404",
-        "data": None
-    })
+
+    return Response({"status": "error", "code": "404", "data": None})
